@@ -10,6 +10,8 @@ Outbound: `device state change -> web api call to esp32-discord-proxy -> discord
 
 Inbound: `a message in discord is typed by a user -> esp32-discord-proxy detects and processes message -> web api call to device`
 
+This tool works in conjunction with: https://github.com/smford/eeh-esp32-rfid
+
 ## Emoji Sources
 - robot icon - http://www.pngall.com/robot-png/download/22191
 - backlight off - https://www.iconspng.com/image/113092/lightbulb-onoff-2
