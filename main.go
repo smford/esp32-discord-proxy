@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -18,9 +19,14 @@ import (
 
 var (
 	Token string
+	Color = 0x009688
+	Icons = "https://kittyhacker101.tk/Static/KatBot"
 )
 
 const APITOKEN = "xyz"
+const LISTENIP = "0.0.0.0"
+const LISTENPORT = "57000"
+const INDEXHTML = "index.html"
 
 type wifiNetwork struct {
 	RSSI    int    `json:"rssi"`
@@ -44,7 +50,6 @@ func init() {
 }
 
 func main() {
-
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
@@ -64,6 +69,7 @@ func main() {
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
+	startWeb(LISTENIP, LISTENPORT, false)
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
@@ -107,6 +113,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		printText += "  laser status\n"
 		printText += "```\n"
 		s.ChannelMessageSend(m.ChannelID, printText)
+		//s.ChannelMessageSend(s.UserChannelCreate(m.Author.ID), printText)
+		//privatechan, err := s.UserChannelCreate(m.Author.ID)
+
+		//if err != nil {
+		//	fmt.Println("ERROR: ", err)
+		//}
+
+		//fmt.Printf("privatechan:%-v", privatechan)
+		//privatechan.ChannelMessageSend(printText)
+		//var privatechan = discordgo.Session
+		//privatechan.ChannelMessageSend(privatechanid, printText)
+		//s.UserChannelCreate(m.Author.ID,
 	}
 
 	if m.Content == "!laser maintenance disable" {
@@ -123,6 +141,29 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Content == "!laser status" {
 		s.ChannelMessageSend(m.ChannelID, shortStatus())
+	}
+
+	if m.Content == "!cat" {
+		tr := &http.Transport{DisableKeepAlives: true}
+		client := &http.Client{Transport: tr}
+		resp, err := client.Get("https://images-na.ssl-images-amazon.com/images/I/71FcdrSeKlL._AC_SL1001_.jpg")
+		if resp != nil {
+			defer resp.Body.Close()
+		}
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "Unable to fetch cat!")
+			fmt.Println("[Warning] : Cat API Error")
+		} else {
+			s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
+				Author: &discordgo.MessageEmbedAuthor{Name: "Cat Picture", IconURL: Icons + "/cat.png"},
+				Color:  Color,
+				Image: &discordgo.MessageEmbedImage{
+					URL: resp.Request.URL.String(),
+				},
+				Footer: &discordgo.MessageEmbedFooter{Text: "Cat pictures provided by TheCatApi", IconURL: Icons + "/cat.png"},
+			})
+			fmt.Println("[Info] : Cat sent successfully to " + m.Author.Username + "(" + m.Author.ID + ") in " + m.ChannelID)
+		}
 	}
 }
 
@@ -294,4 +335,63 @@ func maintenancemode(mystate string) string {
 		return "ERROR"
 	}
 	return ""
+}
+
+func printFile(filename string, webprint http.ResponseWriter) {
+	fmt.Println("Starting printFile")
+	texttoprint, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println("ERROR: cannot open ", filename)
+		if webprint != nil {
+			http.Error(webprint, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		}
+	}
+	if webprint != nil {
+		fmt.Fprintf(webprint, "%s", string(texttoprint))
+	} else {
+		fmt.Print(string(texttoprint))
+	}
+}
+
+func startWeb(listenip string, listenport string, usetls bool) {
+	r := mux.NewRouter()
+
+	r.HandleFunc("/", handlerIndex)
+
+	r.HandleFunc("/laser", handlerLaser)
+	//laserRouter := r.PathPrefix("/laser").Subrouter()
+	//laserRouter.HandleFunc("/{laser}", handlerLaser)
+	//laserRouter.Use(loggingMiddleware)
+
+	log.Printf("Starting HTTP Webserver http://%s:%s\n", listenip, listenport)
+
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         LISTENIP + ":" + LISTENPORT,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	err := srv.ListenAndServe()
+
+	fmt.Println("cannot start http server:", err)
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+		log.Println("MIDDLEWARE: ", r.RemoteAddr, " ", r.RequestURI)
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
+}
+
+func handlerIndex(w http.ResponseWriter, r *http.Request) {
+	log.Println("Starting handlerIndex")
+	printFile(INDEXHTML, w)
+}
+
+func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
+	fmt.Println("starting handlerLaser")
+	fmt.Fprintf(webprint, "%s", "some text")
 }
