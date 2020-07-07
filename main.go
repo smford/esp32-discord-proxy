@@ -25,6 +25,7 @@ var (
 )
 
 const APITOKEN = "sometoken"
+const DEVICEAPITOKEN = "xyz"
 const LISTENIP = "0.0.0.0"
 const LISTENPORT = "57000"
 const INDEXHTML = "index.html"
@@ -207,7 +208,7 @@ func shortStatus() string {
 func fullStatus() string {
 	fmt.Println("starting fullStatus")
 	return "full status disabled"
-	url := fmt.Sprintf("http://192.168.10.135/fullstatus?api=%s", APITOKEN)
+	url := fmt.Sprintf("http://192.168.10.135/fullstatus?api=%s", DEVICEAPITOKEN)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal("NewRequest: ", err)
@@ -243,7 +244,7 @@ func fullStatus() string {
 
 func scanWifi() string {
 	fmt.Println("starting scanWifi")
-	url := fmt.Sprintf("http://192.168.10.135/scanwifi?api=%s", APITOKEN)
+	url := fmt.Sprintf("http://192.168.10.135/scanwifi?api=%s", DEVICEAPITOKEN)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal("NewRequest: ", err)
@@ -286,7 +287,7 @@ func scanWifi() string {
 
 func backlight(mystate string) string {
 	fmt.Println("starting backlight")
-	url := fmt.Sprintf("http://192.168.10.135/backlight?api=%s&state=%s", APITOKEN, mystate)
+	url := fmt.Sprintf("http://192.168.10.135/backlight?api=%s&state=%s", DEVICEAPITOKEN, mystate)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal("NewRequest: ", err)
@@ -313,7 +314,7 @@ func backlight(mystate string) string {
 
 func maintenancemode(mystate string) string {
 	fmt.Println("starting maintenancemode")
-	url := fmt.Sprintf("http://192.168.10.135/maintenance?api=%s&state=%s", APITOKEN, mystate)
+	url := fmt.Sprintf("http://192.168.10.135/maintenance?api=%s&state=%s", DEVICEAPITOKEN, mystate)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal("NewRequest: ", err)
@@ -410,7 +411,7 @@ func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
 	case "on":
 		returnText = "<:laseron:729726642758615151> **" + queries.Get("user") + " IS FIRING LASER, PEW PEW**"
 	case "override":
-		returnText = "<:eehboss:730075631198404649> **BOSS MODE ENABLED**"
+		returnText = "<:eehboss:730075631198404649> **LASER BOSS MODE ENABLED**"
 	case "maintenanceon":
 		returnText = "<:lasermaintenance:729732695009263616> **LASER IN MAINTENANCE MODE**"
 	default:
