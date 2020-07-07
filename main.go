@@ -20,7 +20,8 @@ import (
 var (
 	Token string
 	Color = 0x009688
-	Icons = "https://kittyhacker101.tk/Static/KatBot"
+	//Icons = "https://kittyhacker101.tk/Static/KatBot"
+	Icons = "https://cdn.discordapp.com/emojis"
 )
 
 const APITOKEN = "xyz"
@@ -155,12 +156,12 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			fmt.Println("[Warning] : Cat API Error")
 		} else {
 			s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
-				Author: &discordgo.MessageEmbedAuthor{Name: "Cat Picture", IconURL: Icons + "/cat.png"},
+				Author: &discordgo.MessageEmbedAuthor{Name: "Cat Picture", IconURL: Icons + "/729726642758615151.png"},
 				Color:  Color,
 				Image: &discordgo.MessageEmbedImage{
 					URL: resp.Request.URL.String(),
 				},
-				Footer: &discordgo.MessageEmbedFooter{Text: "Cat pictures provided by TheCatApi", IconURL: Icons + "/cat.png"},
+				Footer: &discordgo.MessageEmbedFooter{Text: "Cat pictures provided by TheCatApi", IconURL: Icons + "/729726642758615151.png"},
 			})
 			fmt.Println("[Info] : Cat sent successfully to " + m.Author.Username + "(" + m.Author.ID + ") in " + m.ChannelID)
 		}
@@ -394,4 +395,13 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
 	fmt.Println("starting handlerLaser")
 	fmt.Fprintf(webprint, "%s", "some text")
+
+	dg, err := discordgo.New("Bot " + Token)
+	if err != nil {
+		fmt.Println("Unable to create discord session!")
+		return
+	}
+
+	dg.ChannelMessageSend("729631967905054764", "laser fired")
+
 }
