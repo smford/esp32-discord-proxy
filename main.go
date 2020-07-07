@@ -24,7 +24,7 @@ var (
 	Icons = "https://cdn.discordapp.com/emojis"
 )
 
-const APITOKEN = "xyz"
+const APITOKEN = "sometoken"
 const LISTENIP = "0.0.0.0"
 const LISTENPORT = "57000"
 const INDEXHTML = "index.html"
@@ -330,7 +330,7 @@ func maintenancemode(mystate string) string {
 			return "<:lasermaintenance:729732695009263616> **LASER IN MAINTENANCE MODE**"
 		}
 		if mystate == "disable" {
-			return "<:eehtick:729828147414958202> **LASER IN NORMAL MODE**"
+			return "<:eehtick:729828147414958202> **LASER IS AVAILABLE TO USE**"
 		}
 	} else {
 		return "ERROR"
@@ -393,8 +393,29 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
-	fmt.Println("starting handlerLaser")
-	fmt.Fprintf(webprint, "%s", "some text")
+	fmt.Println("starting handlerLaser2")
+	queries := r.URL.Query()
+	fmt.Printf("queries = %q\n", queries)
+
+	if APITOKEN != queries.Get("api") {
+		fmt.Fprintf(webprint, "%s", "ERROR: Invalid API")
+		return
+	}
+
+	var returnText = ""
+
+	switch strings.ToLower(queries.Get("action")) {
+	case "off":
+		returnText = "<:eehtick:729828147414958202> **LASER IS AVAILABLE TO USE**"
+	case "on":
+		returnText = "<:laseron:729726642758615151> **" + queries.Get("user") + " IS FIRING LASER, PEW PEW**"
+	case "override":
+		returnText = "<:eehboss:730075631198404649> **BOSS MODE ENABLED**"
+	case "maintenanceon":
+		returnText = "<:lasermaintenance:729732695009263616> **LASER IN MAINTENANCE MODE**"
+	default:
+		return
+	}
 
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
@@ -402,6 +423,7 @@ func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dg.ChannelMessageSend("729631967905054764", "laser fired")
+	fmt.Fprintf(webprint, "%s", returnText)
+	dg.ChannelMessageSend("729631967905054764", returnText)
 
 }
