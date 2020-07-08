@@ -13,6 +13,8 @@ Inbound: `a message in discord is typed by a user -> esp32-discord-proxy detects
 This tool works in conjunction with: https://github.com/smford/eeh-esp32-rfid
 
 ## Emoji Sources
+- 32on - https://iconscout.com/icon/3d-89
+- 3doff - https://iconscout.com/icon/3d-89
 - robot icon - http://www.pngall.com/robot-png/download/22191
 - backlight off - https://www.iconspng.com/image/113092/lightbulb-onoff-2
 - backlight on - https://www.iconspng.com/image/113091/lightbulb-onoff-1

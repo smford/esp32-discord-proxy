@@ -21,7 +21,12 @@ var (
 	Token string
 	Color = 0x009688
 	//Icons = "https://kittyhacker101.tk/Static/KatBot"
-	Icons = "https://cdn.discordapp.com/emojis"
+	Icons    = "https://cdn.discordapp.com/emojis"
+	Emojis   = make(map[string]string)
+	Channels = make(map[string]string)
+	//Devices   = make(map[string]string)
+	DeviceMap = make(map[string]deviceStruct)
+	ActionMap = make(map[string]actionStruct)
 )
 
 const APITOKEN = "sometoken"
@@ -46,7 +51,84 @@ type shortStatusResult struct {
 	Maintenancemode string `json:"MaintenanceMode"`
 }
 
+type deviceStruct struct {
+	Name     string `json:"Name"`
+	Hostname string `json:"Hostname"`
+	Port     int    `json:"Port"`
+	Channel  string `json:"Channel"`
+}
+
+type actionStruct struct {
+	Name   string `json:"Name"`
+	States []string
+}
+
+//var MyDevices []deviceStruct
+
 func init() {
+	Emojis["laseron"] = "<:laseron:729726642758615151>"
+	Emojis["laseroff"] = "<:laseroff:730213748102529064>"
+	Emojis["maintenanceenable"] = "<:maintenance:729732695009263616>"
+	Emojis["maintenancedisable"] = "<:eehtick:729828147414958202>"
+	Emojis["backlighton"] = "<:backlighton:729820542336761856>"
+	Emojis["backlightoff"] = "<:backlightoff:729820688516644894>"
+	Emojis["eehtick"] = "<:eehtick:729828147414958202>"
+	Emojis["eehboss"] = "<:eehboss:730075631198404649>"
+
+	Channels["general-junk"] = "729631967905054764"
+	Channels["laser"] = "729632142358872138"
+
+	// Devices["laser"] = "192.168.10.135"
+
+	/* MyDevices = []deviceStruct{
+		deviceStruct{
+			Name:    "laser",
+			IP:      "192.168.10.135",
+			Channel: "729632142358872138", // laser
+		},
+		deviceStruct{
+			Name:    "laser2",
+			IP:      "192.168.10.136",
+			Channel: "729632142358872138", // laser
+		},
+	} */
+
+	DeviceMap["laser"] = deviceStruct{
+		Name:     "laser",
+		Hostname: "192.168.10.135",
+		Port:     80,
+		Channel:  "729632142358872138", // laser
+	}
+
+	DeviceMap["laser2"] = deviceStruct{
+		Name:     "laser",
+		Hostname: "192.168.10.136",
+		Port:     80,
+		Channel:  "729632142358872138", // laser
+	}
+
+	ActionMap["maintenance"] = actionStruct{
+		Name:   "maintenance",
+		States: []string{"enable", "disable"},
+	}
+
+	ActionMap["backlight"] = actionStruct{
+		Name:   "backlight",
+		States: []string{"on", "off"},
+	}
+
+	/*
+		var steve string = "laser"
+		fmt.Println("Name:", DeviceMap[steve].Name, " Host:", DeviceMap[steve].Hostname, ":", DeviceMap[steve].Port, " Channel:", DeviceMap[steve].Channel)
+		steve = "laser2"
+		fmt.Println("Name:", DeviceMap[steve].Name, " Host:", DeviceMap[steve].Hostname, ":", DeviceMap[steve].Port, " Channel:", DeviceMap[steve].Channel)
+	*/
+
+	for k, v := range DeviceMap {
+		fmt.Printf("%s  Host:%s:%d  Channel:%s\n", k, v.Hostname, v.Port, v.Channel)
+	}
+	//os.Exit(0)
+
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
 }
@@ -115,18 +197,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		printText += "  laser status\n"
 		printText += "```\n"
 		s.ChannelMessageSend(m.ChannelID, printText)
-		//s.ChannelMessageSend(s.UserChannelCreate(m.Author.ID), printText)
-		//privatechan, err := s.UserChannelCreate(m.Author.ID)
-
-		//if err != nil {
-		//	fmt.Println("ERROR: ", err)
-		//}
-
-		//fmt.Printf("privatechan:%-v", privatechan)
-		//privatechan.ChannelMessageSend(printText)
-		//var privatechan = discordgo.Session
-		//privatechan.ChannelMessageSend(privatechanid, printText)
-		//s.UserChannelCreate(m.Author.ID,
 	}
 
 	if m.Content == "!laser maintenance disable" {
@@ -193,12 +263,12 @@ func shortStatus() string {
 		}
 		var returnText = ""
 		if mystatus.State == "on" {
-			returnText = "<:laseron:729726642758615151> **" + strings.ToUpper(mystatus.Device) + " IN USE**"
+			returnText = Emojis["laseron"] + " **" + strings.ToUpper(mystatus.Device) + " IN USE**"
 		} else {
 			returnText = "**" + strings.ToUpper(mystatus.Device) + " IS FREE**"
 		}
 		if mystatus.Maintenancemode == "enabled" {
-			returnText = "<:lasermaintenance:729732695009263616> **" + strings.ToUpper(mystatus.Device) + " IN MAINTENANCE MODE**"
+			returnText = Emojis["maintenance"] + " **" + strings.ToUpper(mystatus.Device) + " IN MAINTENANCE MODE**"
 		}
 		return returnText
 	}
@@ -207,7 +277,6 @@ func shortStatus() string {
 
 func fullStatus() string {
 	fmt.Println("starting fullStatus")
-	return "full status disabled"
 	url := fmt.Sprintf("http://192.168.10.135/fullstatus?api=%s", DEVICEAPITOKEN)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -230,12 +299,12 @@ func fullStatus() string {
 		}
 		var returnText = ""
 		if mystatus.State == "on" {
-			returnText = "<:laseron:729726642758615151> **" + strings.ToUpper(mystatus.Device) + " IN USE**"
+			returnText = Emojis["laseron"] + " **" + strings.ToUpper(mystatus.Device) + " IN USE**"
 		} else {
 			returnText = "**" + strings.ToUpper(mystatus.Device) + " IS FREE**"
 		}
 		if mystatus.Maintenancemode == "enabled" {
-			returnText = "<:lasermaintenance:729732695009263616> **" + strings.ToUpper(mystatus.Device) + " IN MAINTENANCE MODE**"
+			returnText = Emojis["maintenance"] + " **" + strings.ToUpper(mystatus.Device) + " IN MAINTENANCE MODE**"
 		}
 		return returnText
 	}
@@ -285,7 +354,7 @@ func scanWifi() string {
 	return "No networks available"
 }
 
-func backlight(mystate string) string {
+func backlightold(mystate string) string {
 	fmt.Println("starting backlight")
 	url := fmt.Sprintf("http://192.168.10.135/backlight?api=%s&state=%s", DEVICEAPITOKEN, mystate)
 	req, err := http.NewRequest("GET", url, nil)
@@ -301,16 +370,33 @@ func backlight(mystate string) string {
 			log.Fatal(err)
 		}
 		if mystate == "on" {
-			return "<:backlighton:729820542336761856> **LASER BACKLIGHT ON**"
+			return Emojis["backlighton"] + " **LASER BACKLIGHT ON**"
 		}
 		if mystate == "off" {
-			return "<:backlightoff:729820688516644894> **LASER BACKLIGHT OFF**"
+			return Emojis["backlightoff"] + " **LASER BACKLIGHT OFF**"
 		}
 	} else {
 		return "ERROR"
 	}
 	return ""
 }
+
+//=========
+func backlight(mystate string) string {
+	fmt.Println("starting backlight")
+	url := fmt.Sprintf("http://192.168.10.135/backlight?api=%s&state=%s", DEVICEAPITOKEN, mystate)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		log.Fatal("NewRequest: ", err)
+		return "ERROR"
+	}
+	client := &http.Client{}
+	client.Timeout = time.Second * 15
+	client.Do(req)
+	return ""
+}
+
+//=========
 
 func maintenancemode(mystate string) string {
 	fmt.Println("starting maintenancemode")
@@ -322,20 +408,21 @@ func maintenancemode(mystate string) string {
 	}
 	client := &http.Client{}
 	client.Timeout = time.Second * 15
-	resp, err := client.Do(req)
-	if resp.StatusCode == http.StatusOK {
+	//resp, err := client.Do(req)
+	client.Do(req)
+	/*if resp.StatusCode == http.StatusOK {
 		if err != nil {
 			log.Fatal(err)
 		}
 		if mystate == "enable" {
-			return "<:lasermaintenance:729732695009263616> **LASER IN MAINTENANCE MODE**"
+			return Emojis["maintenance"] + " **LASER IN MAINTENANCE MODE**"
 		}
 		if mystate == "disable" {
-			return "<:eehtick:729828147414958202> **LASER IS AVAILABLE TO USE**"
+			return Emojis["eehtick"] + " **LASER IS AVAILABLE TO USE**"
 		}
 	} else {
 		return "ERROR"
-	}
+	}*/
 	return ""
 }
 
@@ -364,6 +451,8 @@ func startWeb(listenip string, listenport string, usetls bool) {
 	//laserRouter := r.PathPrefix("/laser").Subrouter()
 	//laserRouter.HandleFunc("/{laser}", handlerLaser)
 	//laserRouter.Use(loggingMiddleware)
+
+	r.HandleFunc("/api", handlerApi)
 
 	log.Printf("Starting HTTP Webserver http://%s:%s\n", listenip, listenport)
 
@@ -407,13 +496,13 @@ func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
 
 	switch strings.ToLower(queries.Get("action")) {
 	case "off":
-		returnText = "<:eehtick:729828147414958202> **LASER IS AVAILABLE TO USE**"
+		returnText = Emojis["eehtick"] + " **LASER IS AVAILABLE TO USE**"
 	case "on":
-		returnText = "<:laseron:729726642758615151> **" + queries.Get("user") + " IS FIRING LASER, PEW PEW**"
+		returnText = Emojis["laseron"] + " **" + queries.Get("user") + " IS FIRING LASER, PEW PEW**"
 	case "override":
-		returnText = "<:eehboss:730075631198404649> **LASER BOSS MODE ENABLED**"
+		returnText = Emojis["eehboss"] + " **LASER BOSS MODE ENABLED**"
 	case "maintenanceon":
-		returnText = "<:lasermaintenance:729732695009263616> **LASER IN MAINTENANCE MODE**"
+		returnText = Emojis["maintenance"] + " **LASER IN MAINTENANCE MODE**"
 	default:
 		return
 	}
@@ -426,5 +515,115 @@ func handlerLaser(webprint http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(webprint, "%s", returnText)
 	dg.ChannelMessageSend("729631967905054764", returnText)
+
+}
+
+//====
+
+func checkIfDeviceExists(device string) bool {
+	// get all the device names and store in an array
+	i := 0
+	devicearray := make([]string, len(DeviceMap))
+	for k := range DeviceMap {
+		devicearray[i] = k
+		i++
+	}
+
+	for _, a := range devicearray {
+		if strings.ToLower(a) == strings.ToLower(device) {
+			return true
+		}
+	}
+	return false
+}
+
+// check if valid action and state
+func checkActionAndState(action string, state string) bool {
+	// get all the device names and store in an array
+	i := 0
+	actionarray := make([]string, len(ActionMap))
+	for k := range ActionMap {
+		actionarray[i] = k
+		i++
+	}
+
+	//fmt.Printf("array=%v\n", actionarray)
+
+	for _, a := range actionarray {
+		//fmt.Println("a=", a)
+		if strings.ToLower(a) == strings.ToLower(action) {
+			//fmt.Println("Valid Action:", action)
+			//fmt.Println("strings.ToLower(a)=", strings.ToLower(a), "  strings.ToLower(action)=", strings.ToLower(action))
+			for _, s := range ActionMap[a].States {
+				//fmt.Println("s=", s)
+				//fmt.Printf("v=%v\n", s)
+				if strings.ToLower(s) == strings.ToLower(state) {
+					// valid state for this action found
+					return true
+				}
+			}
+		}
+	}
+	// if reached here, state or action is bad and thus return false
+	return false
+}
+
+func handlerApi(webprint http.ResponseWriter, r *http.Request) {
+	fmt.Println("starting handlerLaser2")
+	queries := r.URL.Query()
+	fmt.Printf("queries = %q\n", queries)
+
+	// check if api token is valid
+	if APITOKEN != queries.Get("token") {
+		fmt.Println("ERROR: Invalid API Token", queries.Get("token"))
+		fmt.Fprintf(webprint, "%s", "ERROR: Invalid API Token")
+		return
+	}
+
+	if !checkIfDeviceExists(queries.Get("device")) {
+		fmt.Println("ERROR: Invalid device", queries.Get("device"))
+		fmt.Fprintf(webprint, "%s", "ERROR: Invalid Device")
+		return
+	}
+
+	if !checkActionAndState(queries.Get("action"), queries.Get("state")) {
+		fmt.Println("ERROR: Bad action or state", queries.Get("action"), queries.Get("state"))
+		fmt.Fprintf(webprint, "%s", "ERROR: Bad action or state")
+		return
+	}
+
+	fmt.Printf("Device %s is valid\nAction %s is valid\nState %s is valid\n", queries.Get("device"), queries.Get("action"), queries.Get("state"))
+	fmt.Fprintf(webprint, "Device %s is valid\nAction %s is valid\nState %s is valid", queries.Get("device"), queries.Get("action"), queries.Get("state"))
+
+	var returnText = ""
+
+	/* switch strings.ToLower(queries.Get("action")) {
+	case "off":
+		returnText = Emojis["eehtick"] + " **LASER IS AVAILABLE TO USE**"
+	case "on":
+		returnText = Emojis["laseron"] + " **" + queries.Get("user") + " IS FIRING LASER, PEW PEW**"
+	case "override":
+		returnText = Emojis["eehboss"] + " **LASER BOSS MODE ENABLED**"
+	case "maintenanceon":
+		returnText = Emojis["maintenance"] + " **LASER IN MAINTENANCE MODE**"
+	default:
+		return
+	}
+	*/
+
+	var lookup = queries.Get("action") + queries.Get("state")
+	fmt.Println("lookup=", lookup)
+	returnText = Emojis[queries.Get("action")+queries.Get("state")] + " **" + strings.ToUpper(queries.Get("device")) + "  " + strings.ToUpper(queries.Get("action")) + ":" + strings.ToUpper(queries.Get("state")) + "**"
+
+	dg, err := discordgo.New("Bot " + Token)
+	if err != nil {
+		fmt.Println("Unable to create discord session!")
+		return
+	}
+
+	//fmt.Fprintf(webprint, "%s,  %s", DeviceMap[queries.Get("device")].Channel, returnText)
+	dg.ChannelMessageSend(DeviceMap[queries.Get("device")].Channel, returnText)
+	fmt.Println("returnText = ", returnText)
+	//dg.ChannelMessageSend("729631967905054764", returnText)
 
 }
