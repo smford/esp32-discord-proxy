@@ -21,3 +21,5 @@ This tool works in conjunction with: https://github.com/smford/eeh-esp32-rfid
 - laseron - https://www.cleanpng.com/png-laser-engraving-laser-cutting-laser-icon-5145931/download-png.html
 - lasermaintenance - https://iconscout.com/icon/maintenance-26
 - ticket - https://www.iconfinder.com/icons/1891021/approved_check_checkbox_checkmark_confirm_success_yes_icon
+- userlogin - https://www.flaticon.com/free-icon/enter_1391041
+- userlogout - https://www.flaticon.com/free-icon/log-out_1391043

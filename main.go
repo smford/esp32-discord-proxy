@@ -68,12 +68,17 @@ type actionStruct struct {
 func init() {
 	Emojis["laseron"] = "<:laseron:729726642758615151>"
 	Emojis["laseroff"] = "<:laseroff:730213748102529064>"
-	Emojis["maintenanceenable"] = "<:maintenance:729732695009263616>"
-	Emojis["maintenancedisable"] = "<:eehtick:729828147414958202>"
+	Emojis["maintenanceon"] = "<:maintenanceon:729732695009263616>"
+	Emojis["maintenanceoff"] = "<:maintenanceoff:729828147414958202>"
 	Emojis["backlighton"] = "<:backlighton:729820542336761856>"
 	Emojis["backlightoff"] = "<:backlightoff:729820688516644894>"
 	Emojis["eehtick"] = "<:eehtick:729828147414958202>"
-	Emojis["eehboss"] = "<:eehboss:730075631198404649>"
+	Emojis["overrideon"] = "<:overrideon:730075631198404649>"
+	Emojis["overrideoff"] = "<:overrideoff:730448103517454376>"
+	Emojis["3don"] = "<:3don:730213748102529064>"
+	Emojis["3doff"] = "<3doff:730213748102529064>"
+	Emojis["userlogin"] = "<:userlogin:730444250839515297>"
+	Emojis["userlogout"] = "<:userlogout:730444251695153285>"
 
 	Channels["general-junk"] = "729631967905054764"
 	Channels["laser"] = "729632142358872138"
@@ -109,12 +114,22 @@ func init() {
 
 	ActionMap["maintenance"] = actionStruct{
 		Name:   "maintenance",
-		States: []string{"enable", "disable"},
+		States: []string{"on", "off"},
 	}
 
 	ActionMap["backlight"] = actionStruct{
 		Name:   "backlight",
 		States: []string{"on", "off"},
+	}
+
+	ActionMap["override"] = actionStruct{
+		Name:   "override",
+		States: []string{"on", "off"},
+	}
+
+	ActionMap["user"] = actionStruct{
+		Name:   "user",
+		States: []string{"login", "logout"},
 	}
 
 	/*
@@ -613,7 +628,7 @@ func handlerApi(webprint http.ResponseWriter, r *http.Request) {
 
 	var lookup = queries.Get("action") + queries.Get("state")
 	fmt.Println("lookup=", lookup)
-	returnText = Emojis[queries.Get("action")+queries.Get("state")] + " **" + strings.ToUpper(queries.Get("device")) + "  " + strings.ToUpper(queries.Get("action")) + ":" + strings.ToUpper(queries.Get("state")) + "**"
+	returnText = Emojis[queries.Get("action")+queries.Get("state")] + " **" + strings.ToUpper(queries.Get("device")) + " " + strings.ToUpper(queries.Get("action")) + ":" + strings.ToUpper(queries.Get("state")) + "**"
 
 	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
