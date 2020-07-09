@@ -81,7 +81,7 @@ func init() {
 	Emojis["userlogout"] = "<:userlogout:730444251695153285>"
 
 	Channels["general-junk"] = "729631967905054764"
-	Channels["laser"] = "729632142358872138"
+	Channels["laser"] = "730836803556343808"
 
 	// Devices["laser"] = "192.168.10.135"
 
