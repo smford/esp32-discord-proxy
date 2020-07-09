@@ -102,14 +102,14 @@ func init() {
 		Name:     "laser",
 		Hostname: "192.168.10.135",
 		Port:     80,
-		Channel:  "729632142358872138", // laser
+		Channel:  "730836803556343808", // laser
 	}
 
 	DeviceMap["laser2"] = deviceStruct{
 		Name:     "laser",
 		Hostname: "192.168.10.136",
 		Port:     80,
-		Channel:  "729632142358872138", // laser
+		Channel:  "730836803556343808", // laser
 	}
 
 	ActionMap["maintenance"] = actionStruct{
@@ -207,18 +207,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		printText += "  laser backlight [on|off]\n"
 		printText += "  laser fullstatus\n"
 		printText += "  laser help\n"
-		printText += "  laser maintenance [enable|disable]\n"
+		printText += "  laser maintenance [on|off]\n"
 		printText += "  laser scanwifi\n"
 		printText += "  laser status\n"
 		printText += "```\n"
 		s.ChannelMessageSend(m.ChannelID, printText)
 	}
 
-	if m.Content == "!laser maintenance disable" {
+	if m.Content == "!laser maintenance off" {
 		s.ChannelMessageSend(m.ChannelID, maintenancemode("disable"))
 	}
 
-	if m.Content == "!laser maintenance enable" {
+	if m.Content == "!laser maintenance on" {
 		s.ChannelMessageSend(m.ChannelID, maintenancemode("enable"))
 	}
 
@@ -312,15 +312,19 @@ func fullStatus() string {
 			fmt.Println("unmarshal error: ")
 			fmt.Println(err)
 		}
-		var returnText = ""
-		if mystatus.State == "on" {
-			returnText = Emojis["laseron"] + " **" + strings.ToUpper(mystatus.Device) + " IN USE**"
-		} else {
-			returnText = "**" + strings.ToUpper(mystatus.Device) + " IS FREE**"
-		}
-		if mystatus.Maintenancemode == "enabled" {
-			returnText = Emojis["maintenance"] + " **" + strings.ToUpper(mystatus.Device) + " IN MAINTENANCE MODE**"
-		}
+		var returnText = "```\n"
+		/*
+			if mystatus.State == "on" {
+				returnText = Emojis["laseron"] + " **" + strings.ToUpper(mystatus.Device) + " IN USE**"
+			} else {
+				returnText = "**" + strings.ToUpper(mystatus.Device) + " IS FREE**"
+			}
+			if mystatus.Maintenancemode == "enabled" {
+				returnText = Emojis["maintenance"] + " **" + strings.ToUpper(mystatus.Device) + " IN MAINTENANCE MODE**"
+			}
+		*/
+		returnText += string(bodyBytes)
+		returnText += "```\n"
 		return returnText
 	}
 	return "No status available"
@@ -638,6 +642,8 @@ func handlerApi(webprint http.ResponseWriter, r *http.Request) {
 
 	//fmt.Fprintf(webprint, "%s,  %s", DeviceMap[queries.Get("device")].Channel, returnText)
 	dg.ChannelMessageSend(DeviceMap[queries.Get("device")].Channel, returnText)
+	fmt.Printf("qdevice=%s  dchannel=%s\n", queries.Get("device"), DeviceMap[queries.Get("device")].Channel)
+	//dg.ChannelMessageSend("730836803556343808", returnText)
 	fmt.Println("returnText = ", returnText)
 	//dg.ChannelMessageSend("729631967905054764", returnText)
 
